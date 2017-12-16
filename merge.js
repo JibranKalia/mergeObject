@@ -42,14 +42,13 @@ const merge = (dst, src, decisionFunc) => {
  */
 const mergeObject = (dst, src, decisionFunc) => {
   const out = {};
-  // Stopping condition for recursion. No need to copy if not an object
+  // No need to copy if not an object
   if (isObject(dst)) {
     Object.keys(dst).forEach((key) => {
       out[key] = dst[key];
     });
   }
   Object.keys(src).forEach((key) => {
-    // Src is not an object
     if (!(isObject(src[key]) && dst[key])) {
       if (!dst[key]) {
       // If dst doesn't have anything copy it over
@@ -60,7 +59,7 @@ const mergeObject = (dst, src, decisionFunc) => {
         out[key] = decisionFunc(dst[key], src[key]);
       }
     } else {
-      // src is object. Recurse.
+      // src is an object. Recurse.
       out[key] = mergeObject(dst[key], src[key], decisionFunc);
     }
   });
