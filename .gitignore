@@ -1,0 +1,14 @@
+logs
+.chatbot.config
+built*
+*.log
+pids
+package-lock.json
+node_modules
+.npm
+*.dat
+node/config/default.json
+.env*
+.project
+.settings/
+.DS_Store
