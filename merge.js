@@ -1,4 +1,3 @@
-
 /**
  * Helper function to ensure passed in paramter is a function.
  * https://stackoverflow.com/questions/5999998/how-can-i-check-if-a-javascript-variable-is-function-type
@@ -10,49 +9,62 @@ const isFunction = (functionToCheck) => {
   return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 };
 
+/**
+ * Check if obj is a non-null object
+ * @param {objec} obj
+ */
+const isObject = obj => !!obj && typeof obj === 'object';
 
 /**
  * Merge function does a recursive merge of two objects.
- * In case of collision, it uses the decision func if present otherwise it uses src1's value
- * @param {object} src1
- * @param {object} src2
+ * In case of collision, it uses the decision func if present otherwise it uses dst's value
+ * This inital function is for error checking.
+ * @param {object} dst
+ * @param {object} src
  * @param {function} decisionFunc
  */
 
-const merge = (src1, src2, decisionFunc) => {
-  if (Array.isArray(src1) || Array.isArray(src2)) {
-    throw new Error('Merge only accepts Objects');
+const merge = (dst, src, decisionFunc) => {
+  if (!isObject(dst) || !isObject(src)) {
+    throw new Error('Merge only accepts Non Null Objects');
   }
   if (decisionFunc && !isFunction(decisionFunc)) {
     throw new Error('decision Func has to be a Function');
   }
-  const output = {};
-  Object.keys(src1).forEach((key) => {
-    output[key] = src1[key];
-  });
-  Object.keys(src2).forEach((key) => {
-    if (output[key] && decisionFunc) {
-      output[key] = decisionFunc(output[key], src2[key]);
-    } else if (output[key]) {
-      output[key] = output[key];
+  return mergeObject(dst, src, decisionFunc);
+};
+
+/**
+ * Main Recursive Merge Function.
+ * @param {object} dst
+ * @param {object} src
+ * @param {function} decisionFunc
+ */
+const mergeObject = (dst, src, decisionFunc) => {
+  const out = {};
+  // Stopping condition for recursion. No need to copy if not an object
+  if (isObject(dst)) {
+    Object.keys(dst).forEach((key) => {
+      out[key] = dst[key];
+    });
+  }
+  Object.keys(src).forEach((key) => {
+    // Src is not an object
+    if (!(isObject(src[key]) && dst[key])) {
+      if (!dst[key]) {
+      // If dst doesn't have anything copy it over
+        out[key] = src[key];
+      } else if (decisionFunc) {
+        // Use decision func to deal with collision.
+        // if decision func does't exist dst is already in out
+        out[key] = decisionFunc(dst[key], src[key]);
+      }
     } else {
-      output[key] = src2[key];
+      // src is object. Recurse.
+      out[key] = mergeObject(dst[key], src[key], decisionFunc);
     }
   });
-  return output;
+  return out;
 };
-
-
-const a = {
-  x: 3,
-  y: 4,
-};
-const b = {
-  y: 3,
-};
-
-const sum = (x, y) => x + y;
-
-console.log(merge(a, b, sum));
 
 module.exports = merge;
